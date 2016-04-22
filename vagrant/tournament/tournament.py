@@ -4,47 +4,43 @@
 #
 import psycopg2
 
+from psycopg2 import connect
+
 import itertools
+
+import pdb
 
 def connect(database_name="tournament"):
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    # We refactor our connect() method
-    # to deal not only with the database connection
-    # but also with the cursor
-    # since we can assign and return
-    # multiple variables simultaneously.
     try:
-        db = psycopg2.connect("dbname={}".format(database_name))
-        cursor = db.cursor()
-        return db, cursor
+        conn = psycopg2.connect('dbname="tournament" user="dbuser" host="localhost" password="dbpass"')
     except:
-        print("tournament")
-
+        print "Connect to the database"
     
 def deleteMatches():
     """Remove all the match records from the database."""
-    db, cursor = connect()
+    conn = connect()
     query = "TRUNCATE matches"
-    c.execute(query)
-    db.commit()
-    db.close()
+    cur.execute(query)
+    conn.commit()
+    conn.close()
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    db, cursor = connect()
+    conn = connect()
     query = "DELETE FROM players"
-    c.execute(query)
-    db.commit()
-    db.close()
+    cur.execute(query)
+    conn.commit()
+    conn.close()
 
 def countPlayers():
     """Returns the number of players currently registered."""
-    db, cursor = connect()
+    conn = connect()
     query = "SELECT count(*) AS num FROM players"
-    c.execute(query)
-    count = c.fetchone()[0]
-    db.commit()
-    db.close()
+    cur.execute(query)
+    players_count = c.fetchone()[0]
+    conn.commit()
+    conn.close()
     return count
 
 def registerPlayer(name):
@@ -56,15 +52,14 @@ def registerPlayer(name):
     Args:
     name: the player's full name (need not be unique).
     """
-    db, cursor = connect()
+    conn = connect()
     query = "INSERT INTO players (name) VALUES (%s);"
     parameter = (name,)
-    c.execute = (query, parameter)
-    db.commit()
-    db.close()
+    cur.execute = (query, parameter)
+    conn.commit()
+    conn.close()
 
 def playerStandings():
-
     """Returns a list of the players and their win records, sorted by wins.
     The first entry in the list should be the player in first place, or a player
     tied for first place if there is currently a tie.
@@ -76,16 +71,17 @@ def playerStandings():
     wins: the number of matches the player has won
     matches: the number of matches the player has played
     """
-    db, cursor = connect()
+    conn = connect()
     query = ("SELECT id, name, COUNT(matches.winner) AS wins, "
              "(SELECT games FROM games_view WHERE games_view.id = players.id) "
              "FROM players LEFT JOIN matches "
              "ON players.id = matches.winner "
              "GROUP BY players.id, players.name "
              "ORDER BY wins DESC")
-    c.execute(query)
-    standings = c.fetchall() #Fetches all remaining rows of a query result, returning a list.
-    db.close()
+    cur.execute(query)
+    playerStandings = c.fetchall() #Fetches all remaining rows of a query result, returning a list.
+    conn.close()
+    return playerStandings
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -93,11 +89,12 @@ def reportMatch(winner, loser):
     winner: the id number of the player who won
     loser: the id number of the player who lost
     """
-    query = "INSERT INTO matches (winner, loser) VALUES (%s, %s)"
+    conn = connect()
+    query = "INSERT INTO matches (winner_id, loser_id) VALUES (%s, %s)"
     parameter = (winner, loser)
-    c.execute(query, parameter)
-    db.commit()
-    db.close()
+    cur.execute(query, parameter)
+    conn.commit()
+    conn.close()
 
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
@@ -118,7 +115,7 @@ def swissPairings():
     # and the Python Standard Library
 
     # Iterate through the list and build the pairings
-    
+  
     standings = playerStandings()
     pairingsiterator = itertools.izip(*[iter(standings)]*2)
     results = []
