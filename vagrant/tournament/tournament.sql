@@ -5,7 +5,6 @@
 --
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
---
 -- Clear out any previous tournament databases.
 
 DROP DATABASE IF EXISTS tournament;
@@ -16,7 +15,8 @@ CREATE DATABASE tournament;
 
 -- Connect to the DB before creating tables.
 
-\c tournament;
+\c
+ tournament;
 
 -- Create table for players.
 
@@ -43,14 +43,4 @@ COUNT(matches.*) AS games
 FROM players LEFT JOIN matches
 ON players.id = matches.winner OR 
 players.id = matches.loser
-GROUP BY players.id;
-
---Create a view for number of byes per player
-
-CREATE VIEW byes AS
-SELECT players.id,
-players.name,
-COUNT (matches.winner) AS bye_count
-FROM players LEFT JOIN matches
-ON playes.id = matches.winner AND matches.loser = NULL
 GROUP BY players.id;
