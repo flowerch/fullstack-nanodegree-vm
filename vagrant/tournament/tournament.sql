@@ -5,7 +5,6 @@
 --
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
---
 -- Clear out any previous tournament databases.
 
 DROP DATABASE IF EXISTS tournament;
